@@ -1,7 +1,7 @@
 # project_root/ui/tagger_tab.py
 
 import os
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QPushButton, QComboBox, QFileDialog, QMessageBox)
+from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QPushButton, QComboBox, QFileDialog, QMessageBox, QLineEdit)
 from PyQt6.QtCore import QTimer
 from config import COMBINE_FORMAT
 
@@ -37,6 +37,13 @@ class TaggerTab(QWidget):
         self.saved_tagged_path_label.setStyleSheet("color: #666; padding: 5px;")
         self.saved_tagged_path_label.setWordWrap(True)
 
+        # Tag Prefix Section
+        self.tag_prefix_label = QLabel("Output File Prefix:")
+        self.tag_prefix_input = QLineEdit()
+        self.tag_prefix_input.setPlaceholderText("Optional prefix for tagged files...")
+        self.tag_prefix_input.setText(self.settings_manager.get("tag_prefix", ""))
+        self.tag_prefix_input.textChanged.connect(self.on_prefix_changed)
+
         # Add widgets to layout with proper spacing
         layout.addWidget(self.tag_criteria_label)
         layout.addWidget(self.tag_criteria_button)
@@ -51,6 +58,10 @@ class TaggerTab(QWidget):
         layout.addWidget(self.saved_tagged_label)
         layout.addWidget(self.saved_tagged_button)
         layout.addWidget(self.saved_tagged_path_label)
+        layout.addSpacing(15)
+
+        layout.addWidget(self.tag_prefix_label)
+        layout.addWidget(self.tag_prefix_input)
         layout.addSpacing(15)
 
         # Monitoring controls
@@ -78,6 +89,9 @@ class TaggerTab(QWidget):
         self.saved_tagged_button.clicked.connect(self.select_tagged_folder)
         self.start_monitoring_button.clicked.connect(self.start_monitoring)
         self.stop_monitoring_button.clicked.connect(self.stop_monitoring)
+
+        # Add dropdown selection change handler
+        self.tag_criteria_dropdown.currentTextChanged.connect(self.on_criteria_file_changed)
 
     def set_openai_interface(self, openai_interface):
         """Set the OpenAI interface from RightPanel"""
@@ -120,14 +134,35 @@ class TaggerTab(QWidget):
             self.stop_monitoring()
             return
             
-        # Get list of files in monitored folder
+        # Get list of files and immediately filter out zero-byte files
         allowed_extensions = [".txt", ".md"]
-        files = [f for f in os.listdir(monitored_folder) 
-                if os.path.splitext(f)[1].lower() in allowed_extensions]
+        files_to_process = []
+        
+        for f in os.listdir(monitored_folder):
+            if os.path.splitext(f)[1].lower() not in allowed_extensions:
+                continue
+            
+            input_path = os.path.join(monitored_folder, f)
+            
+            # Check for zero-byte files immediately
+            if os.path.getsize(input_path) == 0:
+                try:
+                    os.remove(input_path)
+                    print(f"Deleted zero-byte file: {f}")
+                except Exception as e:
+                    print(f"Error deleting zero-byte file {f}: {str(e)}")
+                continue
+            
+            files_to_process.append(f)
                 
-        for filename in files:
+        prefix = self.settings_manager.get("tag_prefix", "")
+        for filename in files_to_process:
             input_path = os.path.join(monitored_folder, filename)
-            output_path = os.path.join(tagged_folder, f"tagged_{filename}")
+            if prefix:
+                output_filename = f"{prefix}_{filename}"
+            else:
+                output_filename = filename
+            output_path = os.path.join(tagged_folder, output_filename)
             
             # Skip if output file already exists
             if os.path.exists(output_path):
@@ -174,9 +209,7 @@ class TaggerTab(QWidget):
         directory = QFileDialog.getExistingDirectory(self, "Select Criteria Directory")
         if directory:
             self.populate_file_dropdown(self.tag_criteria_dropdown, directory)
-            # Save first file if any, using a specific key for tag criteria
-            if self.tag_criteria_dropdown.count() > 0:
-                self.settings_manager.set("tag_criteria_file", self.tag_criteria_dropdown.currentText())
+            # The selection change will be handled by on_criteria_file_changed
 
     def select_monitored_folder(self):
         directory = QFileDialog.getExistingDirectory(self, "Select Monitored Folder")
@@ -195,14 +228,16 @@ class TaggerTab(QWidget):
         allowed_extensions = [".txt", ".md", ".json"]
         files = [f for f in os.listdir(directory) if os.path.splitext(f)[1].lower() in allowed_extensions]
         for f in files:
-            dropdown.addItem(os.path.join(directory, f))
+            # Add the full path to the dropdown
+            full_path = os.path.join(directory, f)
+            dropdown.addItem(full_path)
 
     def _load_tag_criteria(self):
-        # Use the specific key for tag criteria
         criteria_file = self.settings_manager.get("tag_criteria_file", "")
         if criteria_file and os.path.exists(criteria_file):
             criteria_dir = os.path.dirname(criteria_file)
             self.populate_file_dropdown(self.tag_criteria_dropdown, criteria_dir)
+            # Set the dropdown to the saved full path
             self.tag_criteria_dropdown.setCurrentText(criteria_file)
 
     def _load_monitored_folder(self):
@@ -214,3 +249,13 @@ class TaggerTab(QWidget):
         tagged_folder = self.settings_manager.get("tagged_folder", "")
         if tagged_folder and os.path.isdir(tagged_folder):
             self.saved_tagged_path_label.setText(f"Selected: {tagged_folder}")
+
+    def on_criteria_file_changed(self, file_path):
+        """Handle criteria file selection changes"""
+        if file_path and os.path.exists(file_path):
+            full_path = os.path.abspath(file_path)
+            self.settings_manager.set("tag_criteria_file", full_path)
+
+    def on_prefix_changed(self, text):
+        """Save the prefix when it changes"""
+        self.settings_manager.set("tag_prefix", text)

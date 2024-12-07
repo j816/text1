@@ -4,9 +4,9 @@
         "processed_folder": ""
     },
     "criteria_file": "/Users/juan/Desktop/aaa/criteria/addDelimiter.md",
-    "input_text": "there's a bluebird in my heart that wants to get out but I'm too tough for him, I say, stay in there, I'm not going to let anybody see you. there's a bluebird in my heart that wants to get out but I pour whiskey on him and inhale cigarette smoke and the whores and the bartenders and the grocery clerks never know that he's in there. there's a bluebird in my heart that wants to get out but I'm too tough for him, I say, stay down, do you want to mess me up? you want to screw up the works? you want to blow my book sales in Europe? there's a bluebird in my heart that wants to get out but I'm too clever, I only let him out at night sometimes when everybody's asleep. I say, I know that you're there, so don't be sad. then I put him back, but he's singing a little in there, I haven't quite let him die and we sleep together like that with our secret pact and it's nice enough to make a man weep, but I don't weep, do you?",
+    "input_text": "I know. I know. they are limited, have different needs and concerns. but I watch and learn from them. I like the little they know, which is so much. they complain but never worry, they walk with a surprising dignity. they sleep with a direct simplicity that humans just can't understand. their eyes are more beautiful than our eyes. and they can sleep 20 hours a day without hesitation or remorse. when I am feeling low all I have to do is watch my cats and my courage returns. I study these creatures. they are my teachers.\n",
     "delimiter": "\u06de",
-    "suffix": "SPLIT",
+    "suffix": "",
     "monitored_folder": "/Users/juan/Desktop/aaa/split",
     "tagged_folder": "/Users/juan/Desktop/aaa/tagged",
     "model": "chatgpt-4o-latest",
@@ -35,7 +35,8 @@
         "gpt-4o-mini",
         "gpt-4o-mini-2024-07-18"
     ],
-    "last_response": "there's a bluebird in my heart that wants to get out \u06de  \n\nbut I'm too tough for him, I say, stay in there, I'm not going to let anybody see you. \u06de  \n\nthere's a bluebird in my heart that wants to get out but I pour whiskey on him and inhale cigarette smoke \u06de  \n\nand the whores and the bartenders and the grocery clerks never know that he's in there. \u06de  \n\nthere's a bluebird in my heart that wants to get out but I'm too tough for him, I say, stay down, do you want to mess me up? \u06de  \n\nyou want to screw up the works? you want to blow my book sales in Europe? \u06de  \n\nthere's a bluebird in my heart that wants to get out but I'm too clever, I only let him out at night sometimes when everybody's asleep. \u06de  \n\nI say, I know that you're there, so don't be sad. \u06de  \n\nthen I put him back, but he's singing a little in there, I haven't quite let him die \u06de  \n\nand we sleep together like that with our secret pact and it's nice enough to make a man weep, \u06de  \n\nbut I don't weep, do you? \u06de  ",
+    "last_response": "I watch and learn from them. \u06de\n\nI like the little they know, which is so much. \u06de\n\nThey complain but never worry, they walk with a surprising dignity. \u06de\n\nThey sleep with a direct simplicity that humans just can't understand. \u06de\n\nTheir eyes are more beautiful than our eyes. \u06de\n\nThey can sleep 20 hours a day without hesitation or remorse. \u06de\n\nWhen I am feeling low all I have to do is watch my cats and my courage returns. \u06de\n\nI study these creatures. \u06de\n\nThey are my teachers. \u06de",
     "text_input_criteria_file": "/Users/juan/Desktop/aaa/criteria/addDelimiter.md",
-    "tag_criteria_file": ""
+    "tag_criteria_file": "/Users/juan/Desktop/aaa/criteria/tagcriteria.md",
+    "tag_prefix": ""
 }
