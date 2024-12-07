@@ -25,6 +25,12 @@ class MainWindow(QMainWindow):
         self.left_panel = LeftPanel(self.settings_manager)
         self.middle_panel = MiddlePanel(self.settings_manager)
         self.right_panel = RightPanel(self.settings_manager, self.secure_storage)
+        
+        # Pass the OpenAI interface to left panel
+        self.left_panel.set_openai_interface(self.right_panel.openai_interface)
+
+        # Connect the GPT response signal
+        self.left_panel.gpt_response_received.connect(self.handle_gpt_response)
 
         # Use a QSplitter to separate the panels
         splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -33,3 +39,7 @@ class MainWindow(QMainWindow):
         splitter.addWidget(self.right_panel)
 
         main_layout.addWidget(splitter)
+        
+    def handle_gpt_response(self, response_text: str):
+        """Handle GPT response by updating the middle panel"""
+        self.middle_panel.markdown_editor_response.setText(response_text)

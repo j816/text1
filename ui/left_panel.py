@@ -1,16 +1,22 @@
 # project_root/ui/left_panel.py
 
 import os
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QPushButton, QComboBox, QTextEdit, QFileDialog, QMessageBox)
-from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QPushButton, QComboBox, QTextEdit, QFileDialog, QMessageBox, QApplication)
+from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QTextOption
 from config import COMBINE_FORMAT
+import tiktoken
 
 class LeftPanel(QWidget):
+    gpt_response_received = pyqtSignal(str)
+    
     def __init__(self, settings_manager):
         super().__init__()
         self.settings_manager = settings_manager
-
+        self.openai_interface = None  # Will be set from MainWindow
+        # Initialize tokenizer for GPT-4 (or get from settings)
+        self.tokenizer = tiktoken.encoding_for_model("gpt-4")
+        
         self.criteria_label = QLabel("TextInputCriteria")
         self.file_selector_button = QPushButton("Select Criteria Directory")
         self.file_dropdown = QComboBox()
@@ -34,7 +40,7 @@ class LeftPanel(QWidget):
         self.setLayout(layout)
 
         # Load persisted criteria file if available
-        criteria_file = self.settings_manager.get("criteria_file", "")
+        criteria_file = self.settings_manager.get("text_input_criteria_file", "")
         criteria_dir = os.path.dirname(criteria_file) if criteria_file else ""
         if criteria_dir and os.path.isdir(criteria_dir):
             self.populate_file_dropdown(criteria_dir, preselect=criteria_file)
@@ -62,14 +68,22 @@ class LeftPanel(QWidget):
 
     def on_criteria_file_selected(self):
         selected_file = self.file_dropdown.currentText()
-        self.settings_manager.set("criteria_file", selected_file)
+        self.settings_manager.set("text_input_criteria_file", selected_file)
         self.update_send_button_state()
 
     def update_token_count(self):
         text = self.input_text_field.toPlainText()
-        # Simplified token counting (in reality, use a proper tokenizer)
-        tokens = text.split()
-        self.token_counter_display.setText(f"Token Count: {len(tokens)}")
+        # Use tiktoken for accurate token counting
+        try:
+            tokens = self.tokenizer.encode(text)
+            token_count = len(tokens)
+            self.token_counter_display.setText(f"Token Count: {token_count}")
+        except Exception as e:
+            # Fallback to simple counting if tokenizer fails
+            tokens = text.split()
+            self.token_counter_display.setText(f"Token Count (estimate): {len(tokens)}")
+            print(f"Tokenizer error: {str(e)}")
+        
         self.settings_manager.set("input_text", text)
         self.update_send_button_state()
 
@@ -82,23 +96,61 @@ class LeftPanel(QWidget):
         else:
             self.send_to_gpt_button.setEnabled(False)
 
+    def set_openai_interface(self, openai_interface):
+        self.openai_interface = openai_interface
+
     def send_to_gpt(self):
+        if not self.openai_interface:
+            QMessageBox.warning(self, "Error", "OpenAI interface not initialized.")
+            return
+
         input_text = self.input_text_field.toPlainText().strip()
         criteria_file_path = self.file_dropdown.currentText().strip()
         if not input_text or not criteria_file_path:
             QMessageBox.warning(self, "Error", "Please provide both input text and criteria file.")
             return
 
-        # Load criteria file content
-        if os.path.exists(criteria_file_path):
+        try:
+            # Load criteria file content
             with open(criteria_file_path, "r", encoding="utf-8") as f:
                 criteria_content = f.read()
-        else:
-            QMessageBox.warning(self, "Error", "Selected criteria file no longer exists.")
-            return
+                
+            # Format the prompt using the template
+            combined = COMBINE_FORMAT.format(
+                input_text=input_text.strip(),
+                criteria_content=criteria_content.strip()
+            )
+            
+            # Show processing indicator
+            self.send_to_gpt_button.setEnabled(False)
+            self.send_to_gpt_button.setText("Processing...")
+            QApplication.processEvents()
+            
+            try:
+                # Send to GPT and get response
+                response = self.openai_interface.send_text(combined)
+                
+                if "error" in response:
+                    QMessageBox.warning(self, "Error", f"API Error: {response['error']}")
+                    return
+                    
+                # Store the response and emit signal
+                self.settings_manager.set("last_response", response["content"])
+                self.gpt_response_received.emit(response["content"])
+                
+            except Exception as e:
+                QMessageBox.warning(self, "Error", f"Failed to send to GPT: {str(e)}")
+                
+        except Exception as e:
+            QMessageBox.warning(self, "Error", f"Error reading criteria file: {str(e)}")
+        finally:
+            # Reset button state
+            self.send_to_gpt_button.setEnabled(True)
+            self.send_to_gpt_button.setText("Send to GPT")
 
-        combined = COMBINE_FORMAT.format(input_text=input_text, criteria_content=criteria_content)
-        # Store combined text in settings or pass to a processing function
-        # For now, just store it:
-        self.settings_manager.set("combined_input", combined)
-        QMessageBox.information(self, "Success", "Combined text has been prepared and sent to GPT (simulation).")
+    def update_tokenizer(self, model_name="gpt-4"):
+        try:
+            self.tokenizer = tiktoken.encoding_for_model(model_name)
+        except KeyError:
+            # Fallback to cl100k_base encoding if model not found
+            self.tokenizer = tiktoken.get_encoding("cl100k_base")

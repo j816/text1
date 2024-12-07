@@ -26,3 +26,6 @@ class RightPanel(QWidget):
 
         layout.addWidget(self.tabs)
         self.setLayout(layout)
+
+        # Pass OpenAI interface to TaggerTab
+        self.tagger_tab.set_openai_interface(self.openai_interface)

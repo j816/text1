@@ -24,9 +24,15 @@ class SettingsManager:
 
     def _load_settings(self):
         if os.path.exists(self.settings_path):
-            with open(self.settings_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            self.settings_data.update(data)
+            try:
+                with open(self.settings_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    if isinstance(data, dict):  # Verify we got valid data
+                        self.settings_data.update(data)
+            except json.JSONDecodeError:
+                # If file is corrupted, reset to defaults and save
+                with open(self.settings_path, "w", encoding="utf-8") as f:
+                    json.dump(self.settings_data, f, indent=4)
 
     def save_settings(self):
         with open(self.settings_path, "w", encoding="utf-8") as f:

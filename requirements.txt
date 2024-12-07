@@ -1,4 +1,6 @@
 PyQt6
 cryptography
 requests
-openai
+openai>=1.0.0
+tiktoken
+markdown

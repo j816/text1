@@ -2,6 +2,7 @@
 
 import sys
 import os
+import json
 from PyQt6.QtWidgets import QApplication
 from ui.main_window import MainWindow
 from settings_manager import SettingsManager
@@ -13,9 +14,25 @@ def ensure_settings_file():
         os.makedirs(resources_path)
     settings_path = os.path.join(resources_path, "settings.json")
     if not os.path.exists(settings_path):
-        # Create default settings.json
+        # Create default settings.json with all required fields
+        default_settings = {
+            "folders": {
+                "split_folder": "",
+                "processed_folder": "",
+                "monitored_folder": "",
+                "tagged_folder": ""
+            },
+            "criteria_file": "",
+            "input_text": "",
+            "delimiter": ",",
+            "suffix": "SPLIT",
+            "model": "gpt-4",
+            "temperature": 0.7,
+            "monitoring_interval": 20,
+            "models_list": []
+        }
         with open(settings_path, "w", encoding="utf-8") as f:
-            f.write('{\n    "folders": {}\n}')
+            json.dump(default_settings, f, indent=4)
     return settings_path
 
 if __name__ == "__main__":
