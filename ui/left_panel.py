@@ -3,9 +3,36 @@
 import os
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QPushButton, QComboBox, QTextEdit, QFileDialog, QMessageBox, QApplication)
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QTextOption
+from PyQt6.QtGui import QTextOption, QSyntaxHighlighter, QTextCharFormat, QColor
 from config import COMBINE_FORMAT
 import tiktoken
+import re
+
+class MarkdownHighlighter(QSyntaxHighlighter):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._formats = {
+            'header': self._create_format(QColor("#0000FF")),  # Blue for headers
+            'emphasis': self._create_format(QColor("#FF00FF")), # Magenta for emphasis
+            'list': self._create_format(QColor("#008000")),     # Green for lists
+        }
+
+    def _create_format(self, color):
+        fmt = QTextCharFormat()
+        fmt.setForeground(color)
+        return fmt
+
+    def highlightBlock(self, text):
+        # Basic markdown highlighting
+        # Headers
+        for match in re.finditer(r'^#{1,6}\s.*$', text):
+            self.setFormat(match.start(), match.end() - match.start(), self._formats['header'])
+        # Lists
+        for match in re.finditer(r'^\s*[\*\-\+]\s.*$', text):
+            self.setFormat(match.start(), match.end() - match.start(), self._formats['list'])
+        # Emphasis
+        for match in re.finditer(r'\*\*.*?\*\*|\*.*?\*|__.*?__|_.*?_', text):
+            self.setFormat(match.start(), match.end() - match.start(), self._formats['emphasis'])
 
 class LeftPanel(QWidget):
     gpt_response_received = pyqtSignal(str)
@@ -24,6 +51,12 @@ class LeftPanel(QWidget):
         self.input_label = QLabel("InputWorkingText")
         self.input_text_field = QTextEdit()
         self.input_text_field.setWordWrapMode(QTextOption.WrapMode.WordWrap)
+        self.input_text_field.setAcceptRichText(False)  # Force plain text mode
+        self.input_text_field.setPlaceholderText("Enter markdown text here...")
+        
+        # Add markdown highlighter
+        self.markdown_highlighter = MarkdownHighlighter(self.input_text_field.document())
+        
         self.token_counter_display = QLabel("Token Count: 0")
         self.send_to_gpt_button = QPushButton("Send to GPT")
 

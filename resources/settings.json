@@ -4,7 +4,7 @@
         "processed_folder": ""
     },
     "criteria_file": "/Users/juan/Desktop/aaa/criteria/addDelimiter.md",
-    "input_text": "I know. I know. they are limited, have different needs and concerns. but I watch and learn from them. I like the little they know, which is so much. they complain but never worry, they walk with a surprising dignity. they sleep with a direct simplicity that humans just can't understand. their eyes are more beautiful than our eyes. and they can sleep 20 hours a day without hesitation or remorse. when I am feeling low all I have to do is watch my cats and my courage returns. I study these creatures. they are my teachers.\n",
+    "input_text": "I know. I know.\nthey are limited, have different\nneeds and\nconcerns.\n\nbut I watch and learn from them.\nI like the little they know,\nwhich is so\nmuch.\n\nthey complain but never\nworry,\nthey walk with a surprising dignity.\nthey sleep with a direct simplicity that\nhumans just can't\nunderstand.\n\ntheir eyes are more\nbeautiful than our eyes.\nand they can sleep 20 hours\na day\nwithout\nhesitation or\nremorse.\n\nwhen I am feeling\nlow\nall I have to do is\nwatch my cats\nand my\ncourage\nreturns.\n\nI study these\ncreatures.\n\nthey are my\nteachers.",
     "delimiter": "\u06de",
     "suffix": "",
     "monitored_folder": "/Users/juan/Desktop/aaa/split",
@@ -35,7 +35,7 @@
         "gpt-4o-mini",
         "gpt-4o-mini-2024-07-18"
     ],
-    "last_response": "I watch and learn from them. \u06de\n\nI like the little they know, which is so much. \u06de\n\nThey complain but never worry, they walk with a surprising dignity. \u06de\n\nThey sleep with a direct simplicity that humans just can't understand. \u06de\n\nTheir eyes are more beautiful than our eyes. \u06de\n\nThey can sleep 20 hours a day without hesitation or remorse. \u06de\n\nWhen I am feeling low all I have to do is watch my cats and my courage returns. \u06de\n\nI study these creatures. \u06de\n\nThey are my teachers. \u06de",
+    "last_response": "I know. I know. \u06de\n\nbut I watch and learn from them. \u06de\n\nI like the little they know,  \nwhich is so  \nmuch. \u06de\n\nthey complain but never  \nworry,  \nthey walk with a surprising dignity. \u06de\n\nthey sleep with a direct simplicity that  \nhumans just can't  \nunderstand. \u06de\n\ntheir eyes are more  \nbeautiful than our eyes. \u06de\n\nand they can sleep 20 hours  \na day  \nwithout  \nhesitation or  \nremorse. \u06de\n\nwhen I am feeling  \nlow  \nall I have to do is  \nwatch my cats  \nand my  \ncourage  \nreturns. \u06de\n\nI study these  \ncreatures. \u06de\n\nthey are my  \nteachers. \u06de",
     "text_input_criteria_file": "/Users/juan/Desktop/aaa/criteria/addDelimiter.md",
     "tag_criteria_file": "/Users/juan/Desktop/aaa/criteria/tagcriteria.md",
     "tag_prefix": ""
