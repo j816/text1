@@ -1,0 +1,59 @@
+# macOS system files
+.DS_Store
+
+# Python virtual environments
+venv/
+path/
+
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment and configuration files
+.env
+.env.*
+*.ini
+*.cfg
+
+# Logs and databases
+*.log
+*.sqlite3
+*.db
+
+# Generated files
+*.swp
+*.swo
+*.bak
+*.tmp
+*.~*
+
+# OS and IDE-specific files
+Thumbs.db
+.vscode/
+.idea/
+
+# Node.js dependencies (if applicable)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build and distribution directories
+build/
+dist/
+*.egg-info/
+
+# Coverage and testing
+.coverage
+coverage.xml
+*.cover
+*.lcov
+
+# Custom ignored files (specific to your case)
+self.settings_manager
+self.settings_storage
+qt_resource_data
+qt_resource_struct
+# Exclude the specific file
+ui/resources_rc.py
