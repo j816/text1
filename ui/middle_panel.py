@@ -13,14 +13,17 @@ class MiddlePanel(QWidget):
         self.markdown_editor_response = QTextEdit()
         self.markdown_editor_response.setWordWrapMode(QTextOption.WrapMode.WordWrap)
         
+        # Add base filename input field
+        self.base_filename_input = QLineEdit()
+        self.base_filename_input.setText(self.settings_manager.get("base_filename", "Text"))
+        
         # Initialize delimiter with saved value
         self.delimiter_input_field = QLineEdit()
         self.delimiter_input_field.setText(self.settings_manager.get("delimiter", ","))
-        # Save delimiter whenever it changes
         self.delimiter_input_field.textChanged.connect(self.save_delimiter)
         
         self.filename_suffix_input = QLineEdit()
-        self.filename_suffix_input.setText(self.settings_manager.get("suffix", "SPLIT"))
+        self.filename_suffix_input.setText(self.settings_manager.get("suffix", ""))
         
         # Add folder selection button and label
         self.folder_selection_button = QPushButton("Select Output Folder")
@@ -33,6 +36,8 @@ class MiddlePanel(QWidget):
         layout.addWidget(self.label)
         layout.addWidget(QLabel("Response Markdown:"))
         layout.addWidget(self.markdown_editor_response)
+        layout.addWidget(QLabel("Base Filename:"))
+        layout.addWidget(self.base_filename_input)
         layout.addWidget(QLabel("Delimiter:"))
         layout.addWidget(self.delimiter_input_field)
         layout.addWidget(QLabel("Filename Suffix (optional):"))
@@ -80,25 +85,23 @@ class MiddlePanel(QWidget):
             QMessageBox.warning(self, "Error", "The text does not contain the specified delimiter.")
             return
 
-        suffix = self.filename_suffix_input.text().strip()
-        if not suffix:
-            suffix = "SPLIT"
+        # Get base filename, use "Text" if empty
+        base_filename = self.base_filename_input.text().strip()
+        if not base_filename:
+            base_filename = "Text"
 
-        # Use the selected folder directly instead of asking again
+        # Get suffix (can be empty)
+        suffix = self.filename_suffix_input.text().strip()
+
         output_folder = self.settings_manager.get_nested("folders", "split_folder", default="")
         if not output_folder:
             QMessageBox.warning(self, "Error", "Please select an output folder first.")
             return
 
-        # Derive base filename from criteria file or input file if available
-        base_filename = "split_output"
-        criteria_file = self.settings_manager.get("criteria_file", "")
-        if criteria_file:
-            base_filename = os.path.splitext(os.path.basename(criteria_file))[0]
-
-        # Save each part
+        # Save each part with new naming convention
         for i, part in enumerate(parts, start=1):
-            out_filename = f"{base_filename}_split_{i}_{suffix}.md"
+            # Construct filename: {base_filename}{suffix}{index}.md
+            out_filename = f"{base_filename}{suffix}{i}.md"
             out_path = os.path.join(output_folder, out_filename)
             with open(out_path, "w", encoding="utf-8") as f:
                 f.write(part.strip())
